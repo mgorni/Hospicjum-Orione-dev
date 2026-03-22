@@ -261,6 +261,18 @@ body {
   text-underline-offset: 9px;
 }
 
+.intent-overlay {
+  position: absolute;
+  inset: var(--panel-block-pad) var(--panel-inline-pad);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.intent-rows {
+  position: relative;
+  z-index: 2;
+}
+
 .intent-submenu {
   overflow: hidden;
   max-height: 0;
