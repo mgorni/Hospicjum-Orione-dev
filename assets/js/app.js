@@ -66,13 +66,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const menuPanel = document.querySelector("[data-menu-panel]");
-  const mainMenu = document.querySelector("[data-main-menu]");
   const groups = Array.from(document.querySelectorAll("[data-group]"));
-  const triggers = Array.from(document.querySelectorAll("[data-intent-trigger]"));
 
-  if (!menuPanel || !mainMenu || !groups.length) return;
+  if (!menuPanel || !groups.length) return;
 
   let openGroup = null;
+
+  function isCompactMode() {
+    return window.matchMedia("(max-width: 860px)").matches;
+  }
 
   function setCoreRow(rowIndex) {
     const safeRow = Number.isFinite(Number(rowIndex)) ? Number(rowIndex) : 0;
@@ -80,8 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function engageMenu(engaged) {
-    const isMobile = window.matchMedia("(max-width: 860px)").matches;
-    if (isMobile) {
+    if (isCompactMode()) {
       menuPanel.classList.add("is-engaged");
       return;
     }
@@ -127,11 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       engageMenu(true);
     });
 
-    trigger.addEventListener("mouseenter", () => {
-      setCoreRow(rowIndex);
-      engageMenu(true);
-    });
-
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
       const alreadyOpen = group.classList.contains("is-open");
@@ -146,7 +142,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  menuPanel.addEventListener("mouseenter", () => engageMenu(true));
+  menuPanel.addEventListener("mouseenter", () => {
+    setCoreRow(0);
+    engageMenu(true);
+  });
 
   menuPanel.addEventListener("mouseleave", () => {
     if (openGroup) return;
@@ -170,13 +169,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-
   window.addEventListener("resize", () => {
-    if (window.matchMedia("(max-width: 860px)").matches) {
-      menuPanel.classList.add("is-engaged");
-    } else if (!openGroup) {
-      menuPanel.classList.remove("is-engaged");
-    }
+    closeAllMenus();
+    setCoreRow(0);
+    engageMenu(false);
   });
 
   window.closeAllMenus = closeAllMenus;
