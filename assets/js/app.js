@@ -25,9 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
       content.innerHTML = html;
       window.location.hash = page;
       updateActiveLinks(page);
-      if (window.closeAllIntentMenus) {
-        window.closeAllIntentMenus();
-      }
+      closeAllIntentMenus();
     } catch (e) {
       content.innerHTML = "<p>Błąd ładowania strony.</p>";
       console.error(e);
@@ -63,51 +61,25 @@ document.addEventListener("DOMContentLoaded", () => {
   const introSlot = document.querySelector(".intent-core-slot-intro");
   const triggers = Array.from(document.querySelectorAll(".intent-trigger"));
 
-  if (!panel || !intro || !sharedCore || !introSlot) return;
-
-  function isDesktop() {
-    return window.innerWidth > 860;
+  function slotFromTarget(target) {
+    if (!target) return null;
+    if (target.classList.contains("intent-core-slot-intro")) return target;
+    return target.querySelector(".intent-core-slot");
   }
 
-  function getSlotForElement(element) {
-    if (!element) return null;
-    if (element.classList.contains("intent-core-slot-intro")) return element;
-    return element.querySelector(".intent-core-slot");
-  }
+  function moveSharedCoreTo(target) {
+    if (!panel || !sharedCore || window.innerWidth <= 860) return;
 
-  function moveSharedCoreTo(element) {
-    if (!isDesktop()) return;
-    const slot = getSlotForElement(element);
+    const slot = slotFromTarget(target);
     if (!slot) return;
 
     const slotRect = slot.getBoundingClientRect();
     const panelRect = panel.getBoundingClientRect();
-    const overlayRect = sharedCore.offsetParent.getBoundingClientRect();
-    const x = slotRect.left - overlayRect.left;
-    const y = slotRect.top - overlayRect.top;
+    const x = slotRect.left - panelRect.left;
+    const y = slotRect.top - panelRect.top;
 
     sharedCore.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
     sharedCore.style.opacity = "1";
-  }
-
-  function firstTrigger() {
-    return triggers[0] || intro;
-  }
-
-  function openPanel() {
-    if (!isDesktop()) return;
-    panel.classList.add("is-open");
-    intro.setAttribute("aria-expanded", "true");
-    moveSharedCoreTo(firstTrigger());
-  }
-
-  function closePanel() {
-    panel.classList.remove("is-open");
-    intro.setAttribute("aria-expanded", "false");
-    closeAllIntentMenus();
-    if (isDesktop()) {
-      moveSharedCoreTo(introSlot);
-    }
   }
 
   window.closeAllIntentMenus = function closeAllIntentMenus() {
@@ -121,10 +93,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  function openPanel() {
+    if (!panel) return;
+    panel.classList.add("is-open");
+    intro?.setAttribute("aria-expanded", "true");
+    moveSharedCoreTo(introSlot);
+  }
+
+  function fullyClosePanel() {
+    if (!panel || window.innerWidth <= 860) return;
+    panel.classList.remove("is-open");
+    intro?.setAttribute("aria-expanded", "false");
+    closeAllIntentMenus();
+    moveSharedCoreTo(introSlot);
+  }
+
   function openIntent(trigger) {
     const group = trigger.closest(".intent-group");
-    const alreadyOpen = group.classList.contains("is-open");
+    if (!group) return;
 
+    const alreadyOpen = group.classList.contains("is-open");
     closeAllIntentMenus();
 
     if (!alreadyOpen) {
@@ -134,45 +122,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  panel.addEventListener("mouseenter", () => {
-    if (isDesktop()) openPanel();
-  });
+  if (panel) {
+    moveSharedCoreTo(introSlot);
 
-  panel.addEventListener("mouseleave", () => {
-    if (isDesktop()) closePanel();
-  });
+    panel.addEventListener("mouseenter", () => {
+      if (window.innerWidth > 860) openPanel();
+    });
 
-  intro.addEventListener("click", (event) => {
+    panel.addEventListener("mouseleave", () => {
+      if (window.innerWidth > 860) fullyClosePanel();
+    });
+  }
+
+  intro?.addEventListener("click", (event) => {
     event.preventDefault();
-    if (isDesktop()) {
-      if (panel.classList.contains("is-open")) {
-        closePanel();
-      } else {
-        openPanel();
-      }
+    if (window.innerWidth <= 860) {
+      panel?.classList.toggle("is-open");
+      intro.setAttribute("aria-expanded", panel?.classList.contains("is-open") ? "true" : "false");
       return;
     }
-
-    panel.classList.toggle("is-open");
-    intro.setAttribute("aria-expanded", panel.classList.contains("is-open") ? "true" : "false");
+    openPanel();
   });
 
-  intro.addEventListener("focus", () => moveSharedCoreTo(introSlot));
+  intro?.addEventListener("focus", () => moveSharedCoreTo(introSlot));
 
   triggers.forEach((trigger) => {
     trigger.addEventListener("mouseenter", () => {
-      if (!panel.classList.contains("is-open")) openPanel();
       moveSharedCoreTo(trigger);
+      if (window.innerWidth > 860 && panel?.classList.contains("is-open")) {
+        openIntent(trigger);
+      }
     });
 
     trigger.addEventListener("focus", () => {
-      if (!panel.classList.contains("is-open")) openPanel();
       moveSharedCoreTo(trigger);
+      if (window.innerWidth > 860 && panel?.classList.contains("is-open")) {
+        openIntent(trigger);
+      }
     });
 
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
-      if (!panel.classList.contains("is-open") && isDesktop()) openPanel();
+      if (!panel?.classList.contains("is-open")) openPanel();
       moveSharedCoreTo(trigger);
       openIntent(trigger);
     });
@@ -180,40 +171,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".intent-menu")) {
-      closePanel();
-      if (!isDesktop()) {
+      fullyClosePanel();
+      if (window.innerWidth <= 860 && panel) {
         panel.classList.remove("is-open");
-        intro.setAttribute("aria-expanded", "false");
+        intro?.setAttribute("aria-expanded", "false");
       }
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      closePanel();
-      if (!isDesktop()) {
+      fullyClosePanel();
+      if (window.innerWidth <= 860 && panel) {
         panel.classList.remove("is-open");
-        intro.setAttribute("aria-expanded", "false");
+        intro?.setAttribute("aria-expanded", "false");
       }
     }
   });
 
   window.addEventListener("resize", () => {
     closeAllIntentMenus();
-    if (isDesktop()) {
-      panel.classList.remove("is-open");
-      intro.setAttribute("aria-expanded", "false");
-      moveSharedCoreTo(introSlot);
+    moveSharedCoreTo(introSlot);
+
+    if (window.innerWidth <= 860) {
+      panel?.classList.add("is-open");
+      intro?.setAttribute("aria-expanded", "true");
     } else {
-      panel.classList.add("is-open");
-      intro.setAttribute("aria-expanded", "true");
+      panel?.classList.remove("is-open");
+      intro?.setAttribute("aria-expanded", "false");
     }
   });
 
-  if (isDesktop()) {
-    moveSharedCoreTo(introSlot);
-  } else {
-    panel.classList.add("is-open");
-    intro.setAttribute("aria-expanded", "true");
+  if (window.innerWidth <= 860) {
+    panel?.classList.add("is-open");
+    intro?.setAttribute("aria-expanded", "true");
   }
 });
