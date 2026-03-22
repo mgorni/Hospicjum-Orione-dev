@@ -57,10 +57,12 @@ body {
 }
 
 .intent-menu-shell {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 18px;
+  min-height: 88px;
 }
 
 .brand-mark {
@@ -86,11 +88,11 @@ body {
 }
 
 .intent-menu-panel {
-  position: relative;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: min(100%, 540px);
   min-width: 430px;
-  max-width: 560px;
-  margin-left: auto;
-  padding: 18px 22px 18px;
   color: var(--menu-text);
   border-radius: 28px;
   overflow: hidden;
@@ -117,16 +119,32 @@ body {
 .intent-menu-intro {
   display: flex;
   justify-content: flex-end;
-  align-items: baseline;
-  gap: .45rem;
-  min-height: 2.3rem;
+  align-items: center;
+  gap: .55rem;
+  min-height: 88px;
+  padding: 18px 24px;
   text-align: right;
   transition: opacity .22s ease, transform .22s ease;
 }
 
+.intro-icon {
+  width: 1.7rem;
+  height: 1.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(29,79,145,.55);
+  border-radius: 999px;
+  color: rgba(29,79,145,.82);
+  font-size: .95rem;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(1px);
+}
+
 .intro-prefix {
-  font-size: 1.02rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 500;
   color: rgba(29,79,145,.82);
 }
 
@@ -138,51 +156,49 @@ body {
 }
 
 .intent-menu-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 18px;
-  row-gap: 0;
-  margin-top: 6px;
+  position: relative;
+  padding: 26px 24px 24px;
+  min-height: 88px;
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height .28s ease, opacity .22s ease, margin-top .22s ease;
+  transition: max-height .34s ease, opacity .22s ease, padding-top .22s ease, padding-bottom .22s ease;
 }
 
 .intent-menu-panel.is-engaged .intent-menu-intro,
 .intent-menu-panel:focus-within .intent-menu-intro {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   pointer-events: none;
+  position: absolute;
+  inset: 0;
 }
 
 .intent-menu-panel.is-engaged .intent-menu-main,
 .intent-menu-panel:focus-within .intent-menu-main {
-  max-height: 520px;
+  max-height: 560px;
   opacity: 1;
-  margin-top: 2px;
 }
 
 .shared-core {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
-  justify-self: start;
-  font-size: 1.8rem;
+  position: absolute;
+  right: 28px;
+  top: 28px;
+  width: 150px;
+  font-size: 1.4rem;
   font-weight: 700;
   line-height: 1.1;
   color: var(--menu-text);
   text-shadow: 0 1px 0 rgba(255,255,255,.5);
-  transform: translateY(calc(var(--core-row, 0) * 56px));
-  transition: transform .22s ease, opacity .18s ease;
+  transform: translateY(calc(var(--core-row, 0) * 52px));
+  transition: transform .24s ease, opacity .18s ease;
+  pointer-events: none;
 }
 
 .intent-group {
-  grid-column: 1 / span 2;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 18px;
-  align-items: start;
+  position: relative;
+  display: block;
+  padding-right: 170px;
 }
 
 .intent-trigger {
@@ -192,18 +208,18 @@ body {
   color: var(--menu-text);
   font: inherit;
   text-align: left;
-  padding: 11px 0 11px;
+  padding: 9px 0;
   margin: 0;
   cursor: pointer;
   border-radius: 0;
-  min-height: 56px;
+  min-height: 52px;
 }
 
 .intent-label {
   display: inline-block;
-  font-size: 2rem;
+  font-size: 1.3rem;
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.08;
   border-bottom: 2px solid transparent;
   transition: color .18s ease, border-color .18s ease, transform .18s ease;
 }
@@ -218,11 +234,14 @@ body {
 }
 
 .intent-submenu {
-  grid-column: 1 / span 2;
   list-style: none;
-  margin: 0 0 2px;
-  padding: 0 0 0 6px;
-  display: none;
+  margin: 0;
+  padding: 0 0 0 12px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: max-height .32s ease, opacity .22s ease, transform .22s ease, margin .22s ease;
 }
 
 .intent-submenu li {
@@ -232,14 +251,17 @@ body {
 
 .intent-group.is-open > .intent-submenu,
 .intent-group:focus-within > .intent-submenu {
-  display: block;
+  max-height: 220px;
+  opacity: 1;
+  transform: translateY(0);
+  margin: 2px 0 8px;
 }
 
 .submenu-link {
   display: inline-block;
   color: rgba(22,61,111,.92);
   text-decoration: none;
-  padding: 7px 0;
+  padding: 6px 0;
   border-radius: 0;
   background: transparent !important;
   white-space: normal;
@@ -255,6 +277,35 @@ body {
   text-underline-offset: 3px;
 }
 
+@media (max-width: 860px) {
+  .intent-menu-shell {
+    min-height: 0;
+  }
+
+  .intent-menu-panel {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .intent-menu-intro {
+    min-height: 72px;
+    padding: 14px 18px;
+  }
+
+  .intent-menu-main {
+    padding: 18px 18px 18px;
+  }
+
+  .shared-core {
+    display: none;
+  }
+
+  .intent-group {
+    padding-right: 0;
+  }
+}
+
 .navlink.active.brand-mark,
 .brand-mark:hover,
 .brand-mark:focus-visible {
@@ -265,7 +316,7 @@ body {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 18px 14px 30px;
+  padding: 26px 14px 30px;
   flex: 1;
   transition: opacity 160ms ease;
 }

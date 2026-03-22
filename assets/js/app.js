@@ -75,7 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let openGroup = null;
 
   function setCoreRow(rowIndex) {
-    menuPanel.style.setProperty("--core-row", String(rowIndex || 0));
+    const safeRow = Number.isFinite(Number(rowIndex)) ? Number(rowIndex) : 0;
+    menuPanel.style.setProperty("--core-row", String(safeRow));
   }
 
   function engageMenu(engaged) {
@@ -166,6 +167,15 @@ document.addEventListener("DOMContentLoaded", () => {
       closeAllMenus();
       setCoreRow(0);
       engageMenu(false);
+    }
+  });
+
+
+  window.addEventListener("resize", () => {
+    if (window.matchMedia("(max-width: 860px)").matches) {
+      menuPanel.classList.add("is-engaged");
+    } else if (!openGroup) {
+      menuPanel.classList.remove("is-engaged");
     }
   });
 
