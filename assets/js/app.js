@@ -56,26 +56,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const panel = document.getElementById("intentPanel");
+  const rows = document.getElementById("intentRows");
   const intro = document.getElementById("intentIntro");
   const sharedCore = document.getElementById("sharedCore");
   const triggers = Array.from(document.querySelectorAll(".intent-trigger"));
   const supportTrigger = document.querySelector(".intent-trigger--support");
-  const introSlot = intro?.querySelector(".intent-core-slot");
+  const introSlot = intro?.querySelector("[data-core-slot]");
 
   function getSlot(target) {
     if (!target) return null;
-    return target.classList.contains("intent-core-slot") ? target : target.querySelector(".intent-core-slot");
+    return target.matches("[data-core-slot]") ? target : target.querySelector("[data-core-slot]");
   }
 
   function moveSharedCoreTo(target) {
-    if (window.innerWidth <= 860 || !panel || !sharedCore) return;
+    if (window.innerWidth <= 860 || !rows || !sharedCore) return;
     const slot = getSlot(target);
     if (!slot) return;
 
     const slotRect = slot.getBoundingClientRect();
-    const panelRect = panel.getBoundingClientRect();
-    const x = slotRect.left - panelRect.left;
-    const y = slotRect.top - panelRect.top;
+    const rowsRect = rows.getBoundingClientRect();
+    const x = slotRect.left - rowsRect.left;
+    const y = slotRect.top - rowsRect.top;
 
     sharedCore.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
     sharedCore.style.opacity = "1";
@@ -150,11 +151,13 @@ document.addEventListener("DOMContentLoaded", () => {
     trigger.addEventListener("mouseenter", () => {
       if (!panel.classList.contains("is-open") && window.innerWidth > 860) openPanel();
       moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
 
     trigger.addEventListener("focus", () => {
       if (window.innerWidth > 860) openPanel();
       moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
 
     trigger.addEventListener("click", (event) => {
