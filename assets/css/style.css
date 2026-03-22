@@ -1,20 +1,11 @@
 :root {
   color-scheme: light;
   --page-bg: #fff;
-  --menu-text: #1d4f91;
-  --menu-accent: #f0a22b;
-  --menu-border: rgba(255,255,255,.44);
-  --menu-shadow: 0 18px 46px rgba(16, 39, 77, .18);
-  --intent-font-size: 1.12rem;
-  --intent-font-weight: 600;
-  --intent-line-height: 1.18;
-  --panel-width: min(100vw, 34rem);
-  --panel-padding-x: 2rem;
-  --panel-padding-top: 2rem;
-  --panel-padding-bottom: 1.6rem;
-  --row-gap: 1rem;
-  --submenu-gap: .45rem;
-  --row-height: calc(var(--intent-font-size) * var(--intent-line-height));
+  --menu-blue: #35529c;
+  --menu-accent: #d8a03a;
+  --panel-line: rgba(53,82,156,.14);
+  --panel-bg-a: rgba(255,255,255,.82);
+  --panel-bg-b: rgba(244,240,222,.72);
 }
 
 * { box-sizing: border-box; }
@@ -42,264 +33,217 @@ body {
   background-attachment: fixed;
 }
 
+.page-bg::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,.34) 0%, rgba(255,255,255,.1) 32%, rgba(233,227,197,.2) 68%, rgba(255,255,255,.08) 100%);
+}
+
 .page-bg::after{
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.84) 0%, rgba(255,255,255,.42) 36%, rgba(255,255,255,.12) 68%, rgba(255,255,255,.04) 100%),
-    linear-gradient(315deg, rgba(255,255,255,.24) 0%, rgba(255,255,255,.06) 46%, rgba(255,255,255,.86) 92%, var(--page-bg) 100%);
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 42%, rgba(255,255,255,.85) 72%, var(--page-bg) 100%);
 }
 
 .site-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
-  padding: 0;
   pointer-events: none;
 }
 
 .intent-menu {
-  max-width: none;
-  margin: 0;
-}
-
-.intent-menu-shell {
-  position: relative;
-  min-height: 0;
-  pointer-events: none;
-}
-
-.brand-mark {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0;
-  text-decoration: none;
-  color: var(--menu-text);
-  font-weight: 800;
-  font-size: 1.6rem;
-  line-height: .95;
-  padding: 14px 16px;
-  border-radius: 0 0 18px 0;
-  background: rgba(255,255,255,.28);
-  border: 1px solid rgba(255,255,255,.4);
-  backdrop-filter: blur(10px);
-  box-shadow: var(--menu-shadow);
-  pointer-events: auto;
-  margin: 0;
-}
-
-.brand-mark-title,
-.brand-mark-subtitle {
-  display: block;
-}
-
-.intent-menu-panel {
-  position: absolute;
-  right: 0;
+  position: fixed;
   top: 0;
-  width: var(--panel-width);
-  min-height: 5.5rem;
-  color: var(--menu-text);
-  border-radius: 0 0 0 2rem;
-  overflow: hidden;
-  box-shadow: var(--menu-shadow);
-  backdrop-filter: blur(10px);
+  right: 0;
+  z-index: 150;
   pointer-events: auto;
-  --core-row: 0;
 }
 
-.intent-menu-overlay {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--menu-border);
-  border-radius: inherit;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.50) 0%, rgba(255,255,255,.22) 45%, rgba(255,255,255,.10) 100%),
-    linear-gradient(315deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,.10) 38%, rgba(255,255,255,.04) 100%);
-}
-
-.intent-menu-intro,
-.intent-menu-main,
-.shared-core {
+.intent-panel {
   position: relative;
-  z-index: 1;
+  width: min(720px, calc(100vw - 8px));
+  min-height: 76px;
+  padding: 18px 26px 18px 30px;
+  border-bottom-left-radius: 44px;
+  border-left: 1px solid rgba(255,255,255,.45);
+  border-bottom: 1px solid rgba(255,255,255,.45);
+  background:
+    linear-gradient(135deg, var(--panel-bg-a) 0%, rgba(247,245,239,.76) 40%, var(--panel-bg-b) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: min-height 240ms ease, box-shadow 240ms ease, background 240ms ease;
+  box-shadow: 0 10px 24px rgba(0,0,0,.04);
 }
 
-.intent-menu-intro,
-.intent-trigger,
-.shared-core {
-  font-size: var(--intent-font-size);
-  font-weight: var(--intent-font-weight);
-  line-height: var(--intent-line-height);
+.intent-panel.is-open {
+  min-height: 360px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.08);
 }
 
-.intent-menu-intro {
+.intent-intro {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--menu-blue);
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: .7rem;
-  min-height: 5.5rem;
-  padding: var(--panel-padding-top) var(--panel-padding-x) var(--panel-padding-bottom);
+  justify-content: flex-end;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  font: inherit;
+  cursor: pointer;
   text-align: right;
-  transition: opacity .22s ease;
 }
 
-.intro-icon {
-  width: 1.75rem;
-  height: 1.75rem;
+.intent-intro-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2px solid rgba(53,82,156,.55);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid rgba(29,79,145,.55);
-  border-radius: 999px;
-  color: rgba(29,79,145,.82);
+  font-size: 20px;
+  line-height: 1;
   flex: 0 0 auto;
 }
 
-.intro-icon-arrow {
-  font-size: .92rem;
-  line-height: 1;
-  transform: translateY(.02rem);
-}
-
-.intro-prefix {
-  color: rgba(29,79,145,.84);
-}
-
+.intent-label-text,
 .shared-core {
-  position: absolute;
-  top: var(--panel-padding-top);
-  right: var(--panel-padding-x);
-  color: var(--menu-text);
+  font-size: clamp(1.05rem, 1.2vw + .55rem, 1.65rem);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -.01em;
+  color: var(--menu-blue);
+}
+
+.intent-intro .intent-label-text {
   white-space: nowrap;
-  transform: translateY(calc(var(--core-row) * (var(--row-height) + var(--row-gap))));
-  transition: transform .24s ease;
-  pointer-events: none;
 }
 
-.intent-menu-main {
+.intent-core-slot {
+  display: inline-block;
   position: relative;
-  display: grid;
-  gap: var(--row-gap);
-  padding: var(--panel-padding-top) var(--panel-padding-x) var(--panel-padding-bottom);
-  padding-right: 13rem;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  transition: max-height .36s ease, opacity .22s ease, padding-top .22s ease, padding-bottom .22s ease;
+  min-width: 9.4ch;
+  height: calc(1.12em + 4px);
+  vertical-align: top;
 }
 
-.intent-menu-panel.is-engaged .intent-menu-intro,
-.intent-menu-panel:focus-within .intent-menu-intro {
-  opacity: 0;
+.ghost-core {
+  visibility: hidden;
   pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.intent-overlay {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+  z-index: 3;
 }
 
-.intent-menu-panel.is-engaged .intent-menu-main,
-.intent-menu-panel:focus-within .intent-menu-main {
-  max-height: 34rem;
-  opacity: 1;
+.intent-overlay .shared-core {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  transition: transform 220ms ease, opacity 160ms ease;
 }
 
-.intent-group {
+.intent-options {
   position: relative;
-  display: block;
+  z-index: 2;
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.intent-panel.is-open .intent-options {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.intent-group + .intent-group {
+  border-top: 1px solid var(--panel-line);
 }
 
 .intent-trigger {
-  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0;
   border: 0;
   background: transparent;
-  color: var(--menu-text);
-  text-align: left;
-  padding: 0;
-  margin: 0;
+  padding: 20px 0 18px;
   cursor: pointer;
-  border-radius: 0;
-  min-height: auto;
+  text-align: left;
 }
 
-.intent-label {
-  display: inline-block;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  border-bottom: 2px solid transparent;
-  transition: color .18s ease, border-color .18s ease, transform .18s ease;
+.intent-trigger .intent-label-text {
+  white-space: nowrap;
 }
 
-.intent-trigger:hover .intent-label,
-.intent-trigger:focus-visible .intent-label,
-.intent-group.is-open .intent-label,
-.intent-group.is-active .intent-label {
-  color: #143f78;
-  border-color: rgba(240,162,43,.95);
-  transform: translateX(2px);
+.intent-trigger.is-active .intent-label-text {
+  text-decoration: underline;
+  text-decoration-color: var(--menu-accent);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 9px;
 }
 
 .intent-submenu {
-  list-style: none;
-  margin: 0;
-  padding: 0 0 0 .9rem;
+  overflow: hidden;
   max-height: 0;
   opacity: 0;
-  overflow: hidden;
-  transform: translateY(-.35rem);
-  transition: max-height .34s ease, opacity .26s ease, transform .26s ease, padding-top .26s ease;
+  transform: translateY(-8px);
+  transition: max-height 280ms ease, opacity 220ms ease, transform 220ms ease;
+  padding-left: 0;
 }
 
-.intent-submenu li {
-  list-style: none;
-  margin: 0;
-}
-
-.intent-submenu li + li {
-  margin-top: var(--submenu-gap);
-}
-
-.intent-group.is-open > .intent-submenu,
-.intent-group:focus-within > .intent-submenu {
-  max-height: 14rem;
+.intent-group.is-open .intent-submenu {
+  max-height: 260px;
   opacity: 1;
   transform: translateY(0);
-  padding-top: .65rem;
+  padding-bottom: 12px;
 }
 
 .submenu-link {
-  display: inline-block;
-  color: rgba(22,61,111,.92);
+  display: block;
+  width: fit-content;
+  color: var(--menu-blue);
   text-decoration: none;
-  padding: 0;
-  background: transparent !important;
-  white-space: normal;
-  font-size: .98rem;
-  line-height: 1.3;
+  font-size: clamp(1rem, .5vw + .8rem, 1.15rem);
+  line-height: 1.35;
+  padding: 10px 0;
 }
 
 .submenu-link:hover,
 .submenu-link:focus-visible,
 .submenu-link.active {
-  color: #0f3769;
+  color: #213b7a;
   text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-
-.navlink.active.brand-mark,
-.brand-mark:hover,
-.brand-mark:focus-visible {
-  background: rgba(255,255,255,.38);
+  text-decoration-color: var(--menu-accent);
+  text-underline-offset: 5px;
 }
 
 .content {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 26px 14px 30px;
+  padding: 18px 14px 30px;
   flex: 1;
   transition: opacity 160ms ease;
 }
@@ -346,84 +290,47 @@ body {
 .account{ font-size:1.1em; }
 .qr-buttons{ margin-top:10px; }
 .qr-buttons button{ margin-right:8px; padding:6px 12px; cursor:pointer; }
-#qr-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:999; }
-#qr-overlay img{ max-width:90%; max-height:90%; background:white; padding:10px; border-radius:6px; }
-.footer-box h3 { margin: 0 0 8px; }
-.footer-box p { margin: 6px 0; }
-.icon { width: 18px; height: 18px; vertical-align: -3px; margin-right: 8px; }
 
-@media (min-width: 860px) {
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 960px) {
-  :root {
-    --panel-width: min(100vw, 31rem);
-  }
-
-  .brand-mark {
-    font-size: 1.35rem;
-    padding: 12px 14px;
-  }
-
-  .content {
-    padding-top: 7rem;
-  }
+@media (max-width: 980px) {
+  .intent-panel { width: min(680px, calc(100vw - 4px)); }
 }
 
 @media (max-width: 860px) {
-  :root {
-    --panel-width: min(100vw, 28rem);
-    --intent-font-size: 1.03rem;
-    --panel-padding-x: 1.15rem;
-    --panel-padding-top: 1rem;
-    --panel-padding-bottom: 1rem;
-    --row-gap: .85rem;
-  }
-
-  .site-header {
+  .intent-menu {
     position: static;
   }
 
-  .intent-menu-panel {
-    position: relative;
-    margin-left: auto;
-    width: var(--panel-width);
-    min-height: 0;
-    border-radius: 0 0 0 1.25rem;
+  .site-header {
+    pointer-events: auto;
   }
 
-  .intent-menu-intro {
-    display: none;
-  }
-
-  .intent-menu-main {
-    display: grid;
-    max-height: none !important;
-    opacity: 1 !important;
-    overflow: visible;
-    padding-right: var(--panel-padding-x);
-  }
-
-  .shared-core {
-    display: none;
-  }
-
-  .intent-group {
-    border-top: 1px solid rgba(29,79,145,.10);
-    padding-top: .5rem;
-  }
-
-  .intent-group:first-of-type {
-    border-top: 0;
-    padding-top: 0;
-  }
-
-  .intent-trigger {
+  .intent-panel,
+  .intent-panel.is-open {
     width: 100%;
+    min-height: 0;
+    border-radius: 0 0 0 28px;
+    box-shadow: none;
+    padding: 14px 18px;
   }
+
+  .intent-overlay { display: none; }
+  .intent-core-slot { display: none; }
+
+  .intent-intro {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .intent-options {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    margin-top: 10px;
+  }
+
+  .intent-group.is-open .intent-submenu { max-height: 320px; }
 
   .content {
-    padding-top: 1.5rem;
+    padding-top: 18px;
   }
 }

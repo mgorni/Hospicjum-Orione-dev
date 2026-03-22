@@ -4,8 +4,6 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const content = document.getElementById("content");
-  const yearNode = document.getElementById("year");
-  if (yearNode) yearNode.textContent = new Date().getFullYear();
 
   const routes = {
     home: "/partials/home.html",
@@ -22,14 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       content.innerHTML = '<div class="loading">Ładowanie…</div>';
-
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
       const html = await response.text();
-
       content.innerHTML = html;
       window.location.hash = page;
       updateActiveLinks(page);
+      closeAllIntentMenus();
     } catch (e) {
       content.innerHTML = "<p>Błąd ładowania strony.</p>";
       console.error(e);
@@ -40,19 +36,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".navlink").forEach((link) => {
       link.classList.toggle("active", link.dataset.page === activePage);
     });
-
-    document.querySelectorAll("[data-group]").forEach((group) => {
-      const hasActiveChild = !!group.querySelector(`.submenu-link[data-page="${activePage}"]`);
-      group.classList.toggle("is-active", hasActiveChild);
-    });
   }
 
-  document.querySelectorAll(".navlink[data-page]").forEach((a) => {
+  document.querySelectorAll(".navlink").forEach((a) => {
     a.addEventListener("click", (ev) => {
       ev.preventDefault();
       const page = a.dataset.page;
       loadPage(page);
-      if (typeof window.closeAllMenus === "function") window.closeAllMenus();
     });
   });
 
@@ -61,121 +51,148 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ======================
-// Intent menu behavior
+// Intent menu
 // ======================
 
 document.addEventListener("DOMContentLoaded", () => {
-  const menuPanel = document.querySelector("[data-menu-panel]");
-  const groups = Array.from(document.querySelectorAll("[data-group]"));
+  const panel = document.getElementById("intentPanel");
+  const intro = document.getElementById("intentIntro");
+  const options = document.getElementById("intentOptions");
+  const sharedCore = document.getElementById("sharedCore");
+  const triggers = Array.from(document.querySelectorAll(".intent-trigger"));
+  const allTargets = Array.from(document.querySelectorAll("[data-core-target], .intent-core-slot-intro"));
 
-  if (!menuPanel || !groups.length) return;
-
-  let openGroup = null;
-
-  function isCompactMode() {
-    return window.matchMedia("(max-width: 860px)").matches;
+  function slotFromTarget(target) {
+    if (!target) return null;
+    if (target.classList.contains("intent-core-slot-intro")) return target;
+    return target.querySelector(".intent-core-slot");
   }
 
-  function setCoreRow(rowIndex) {
-    const safeRow = Number.isFinite(Number(rowIndex)) ? Number(rowIndex) : 0;
-    menuPanel.style.setProperty("--core-row", String(safeRow));
+  function moveSharedCoreTo(target) {
+    if (window.innerWidth <= 860 || !panel || !sharedCore) return;
+    const slot = slotFromTarget(target);
+    if (!slot) return;
+
+    const slotRect = slot.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    const x = slotRect.left - panelRect.left;
+    const y = slotRect.top - panelRect.top;
+
+    sharedCore.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    sharedCore.style.opacity = "1";
   }
 
-  function engageMenu(engaged) {
-    if (isCompactMode()) {
-      menuPanel.classList.add("is-engaged");
-      return;
-    }
-
-    if (engaged) {
-      menuPanel.classList.add("is-engaged");
-    } else if (!openGroup) {
-      menuPanel.classList.remove("is-engaged");
-    }
+  function openPanel() {
+    if (!panel) return;
+    panel.classList.add("is-open");
+    if (intro) intro.setAttribute("aria-expanded", "true");
+    moveSharedCoreTo(document.querySelector(".intent-core-slot-intro"));
   }
 
-  function closeAllMenus() {
-    groups.forEach((group) => {
+  function closePanel() {
+    if (!panel || window.innerWidth <= 860) return;
+    panel.classList.remove("is-open");
+    if (intro) intro.setAttribute("aria-expanded", "false");
+    closeAllIntentMenus();
+    moveSharedCoreTo(document.querySelector(".intent-core-slot-intro"));
+  }
+
+  window.closeAllIntentMenus = function closeAllIntentMenus() {
+    document.querySelectorAll(".intent-group").forEach((group) => {
       group.classList.remove("is-open");
-      const button = group.querySelector("[data-intent-trigger]");
-      if (button) button.setAttribute("aria-expanded", "false");
+      const button = group.querySelector(".intent-trigger");
+      if (button) {
+        button.classList.remove("is-active");
+        button.setAttribute("aria-expanded", "false");
+      }
     });
-    openGroup = null;
+  };
+
+  function openIntent(trigger) {
+    const group = trigger.closest(".intent-group");
+    const alreadyOpen = group.classList.contains("is-open");
+
+    closeAllIntentMenus();
+
+    if (!alreadyOpen) {
+      group.classList.add("is-open");
+      trigger.classList.add("is-active");
+      trigger.setAttribute("aria-expanded", "true");
+    }
   }
 
-  function openMenu(group) {
-    closeAllMenus();
-    group.classList.add("is-open");
-    const button = group.querySelector("[data-intent-trigger]");
-    if (button) button.setAttribute("aria-expanded", "true");
-    openGroup = group;
-    engageMenu(true);
+  if (panel) {
+    moveSharedCoreTo(document.querySelector(".intent-core-slot-intro"));
+
+    panel.addEventListener("mouseenter", () => {
+      if (window.innerWidth > 860) openPanel();
+    });
+
+    panel.addEventListener("mouseleave", () => {
+      if (window.innerWidth > 860) closePanel();
+    });
   }
 
-  groups.forEach((group, index) => {
-    const trigger = group.querySelector("[data-intent-trigger]");
-    if (!trigger) return;
-
-    const rowIndex = Number(group.dataset.coreRow || index || 0);
-
-    group.addEventListener("mouseenter", () => {
-      setCoreRow(rowIndex);
-      engageMenu(true);
+  if (intro) {
+    intro.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (window.innerWidth <= 860) {
+        panel.classList.toggle("is-open");
+        intro.setAttribute("aria-expanded", panel.classList.contains("is-open") ? "true" : "false");
+      } else {
+        openPanel();
+      }
     });
 
-    group.addEventListener("focusin", () => {
-      setCoreRow(rowIndex);
-      engageMenu(true);
-    });
+    intro.addEventListener("focus", () => moveSharedCoreTo(document.querySelector(".intent-core-slot-intro")));
+  }
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("mouseenter", () => moveSharedCoreTo(trigger));
+    trigger.addEventListener("focus", () => moveSharedCoreTo(trigger));
 
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
-      const alreadyOpen = group.classList.contains("is-open");
-      setCoreRow(rowIndex);
-      engageMenu(true);
-
-      if (alreadyOpen) {
-        closeAllMenus();
-      } else {
-        openMenu(group);
-      }
+      if (!panel.classList.contains("is-open")) openPanel();
+      moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
   });
 
-  menuPanel.addEventListener("mouseenter", () => {
-    setCoreRow(0);
-    engageMenu(true);
-  });
-
-  menuPanel.addEventListener("mouseleave", () => {
-    if (openGroup) return;
-    setCoreRow(0);
-    engageMenu(false);
-  });
-
   document.addEventListener("click", (event) => {
-    if (!event.target.closest("[data-menu-panel]")) {
-      closeAllMenus();
-      setCoreRow(0);
-      engageMenu(false);
+    if (!event.target.closest(".intent-menu")) {
+      closePanel();
+      if (window.innerWidth <= 860 && panel) {
+        panel.classList.remove("is-open");
+        if (intro) intro.setAttribute("aria-expanded", "false");
+      }
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      closeAllMenus();
-      setCoreRow(0);
-      engageMenu(false);
+      closePanel();
+      if (window.innerWidth <= 860 && panel) {
+        panel.classList.remove("is-open");
+        if (intro) intro.setAttribute("aria-expanded", "false");
+      }
     }
   });
 
   window.addEventListener("resize", () => {
-    closeAllMenus();
-    setCoreRow(0);
-    engageMenu(false);
+    closeAllIntentMenus();
+    moveSharedCoreTo(document.querySelector(".intent-core-slot-intro"));
+    if (window.innerWidth <= 860) {
+      panel.classList.add("is-open");
+      intro?.setAttribute("aria-expanded", "true");
+    } else {
+      panel.classList.remove("is-open");
+      intro?.setAttribute("aria-expanded", "false");
+    }
   });
 
-  window.closeAllMenus = closeAllMenus;
-  setCoreRow(0);
-  engageMenu(false);
+  if (window.innerWidth <= 860) {
+    panel.classList.add("is-open");
+    intro?.setAttribute("aria-expanded", "true");
+  }
 });
