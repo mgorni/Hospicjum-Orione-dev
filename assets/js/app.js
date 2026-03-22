@@ -140,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function afterPanelSettle(callback) {
     if (!panel) return;
+
     if (isMobileMenu()) {
       requestAnimationFrame(callback);
       return;
@@ -197,14 +198,11 @@ document.addEventListener("DOMContentLoaded", () => {
     intro.setAttribute("aria-expanded", "true");
   }
 
-function openPanel(target = supportTrigger || introSlot) {
-
-  moveSharedCoreTo(target);
-
-  ensurePanelOpen();
-
-  afterPanelSettle(() => moveSharedCoreTo(target));
-}
+  function openPanel(target = supportTrigger || introSlot) {
+    moveSharedCoreTo(target);
+    ensurePanelOpen();
+    afterPanelSettle(() => moveSharedCoreTo(target));
+  }
 
   function closePanel() {
     if (isMobileMenu()) return;
@@ -216,30 +214,28 @@ function openPanel(target = supportTrigger || introSlot) {
     afterPanelSettle(() => moveSharedCoreTo(introSlot));
   }
 
-function openIntent(trigger, options = {}) {
-  const { immediate = false } = options;
+  function openIntent(trigger, options = {}) {
+    const { immediate = true } = options;
 
-  const group = trigger.closest(".intent-group");
-  if (!group) return;
+    const group = trigger.closest(".intent-group");
+    if (!group) return;
 
-  const alreadyOpen = group.classList.contains("is-open");
+    const alreadyOpen = group.classList.contains("is-open");
 
-  // hover/focus: natychmiastowy ruch
-  if (immediate) {
-    moveSharedCoreTo(trigger);
+    closeAllIntentMenus();
+
+    if (!alreadyOpen) {
+      group.classList.add("is-open");
+      trigger.classList.add("is-active");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+
+    if (immediate) {
+      moveSharedCoreTo(trigger);
+    }
+
+    afterPanelSettle(() => moveSharedCoreTo(trigger));
   }
-
-  closeAllIntentMenus();
-
-  if (!alreadyOpen) {
-    group.classList.add("is-open");
-    trigger.classList.add("is-active");
-    trigger.setAttribute("aria-expanded", "true");
-  }
-
-  // klik / zmiana layoutu: korekta po ustabilizowaniu panelu
-  afterPanelSettle(() => moveSharedCoreTo(trigger));
-}
 
   function initDesktopState() {
     panel.classList.remove("is-open");
@@ -291,48 +287,48 @@ function openIntent(trigger, options = {}) {
 
   intro.addEventListener("focus", () => {
     if (!isMobileMenu()) {
-      afterPanelSettle(() => moveSharedCoreTo(introSlot));
+      moveSharedCoreTo(introSlot);
     }
   });
 
   triggers.forEach((trigger) => {
-  trigger.addEventListener("mouseenter", () => {
-    if (isMobileMenu()) return;
+    trigger.addEventListener("mouseenter", () => {
+      if (isMobileMenu()) return;
 
-    if (!panel.classList.contains("is-open")) {
-      openPanel(trigger);
-      return;
-    }
+      if (!panel.classList.contains("is-open")) {
+        openPanel(trigger);
+        return;
+      }
 
-    openIntent(trigger, { immediate: true });
+      openIntent(trigger, { immediate: true });
+    });
+
+    trigger.addEventListener("focus", () => {
+      if (isMobileMenu()) return;
+
+      if (!panel.classList.contains("is-open")) {
+        openPanel(trigger);
+        return;
+      }
+
+      openIntent(trigger, { immediate: true });
+    });
+
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      if (isMobileMenu()) {
+        openIntent(trigger, { immediate: false });
+        return;
+      }
+
+      if (!panel.classList.contains("is-open")) {
+        ensurePanelOpen();
+      }
+
+      openIntent(trigger, { immediate: true });
+    });
   });
-
-  trigger.addEventListener("focus", () => {
-    if (isMobileMenu()) return;
-
-    if (!panel.classList.contains("is-open")) {
-      openPanel(trigger);
-      return;
-    }
-
-    openIntent(trigger, { immediate: true });
-  });
-
-  trigger.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    if (isMobileMenu()) {
-      openIntent(trigger);
-      return;
-    }
-
-    if (!panel.classList.contains("is-open")) {
-      ensurePanelOpen();
-    }
-
-    openIntent(trigger, { immediate: false });
-  });
-});
 
   document.addEventListener("click", (event) => {
     if (event.target.closest(".intent-menu")) return;
