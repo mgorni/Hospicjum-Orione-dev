@@ -6,63 +6,65 @@
   <title>Hospicjum domowe – Apostolstwo Miłosierdzia</title>
   <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
+
 <body>
+
   <div class="page-bg" aria-hidden="true"></div>
 
   <header class="site-header">
     <nav class="intent-menu" aria-label="Menu strony hospicjum">
       <div class="intent-panel" id="intentPanel">
-        <div class="intent-head" id="intentHead">
-          <button type="button" class="intent-row intent-row-intro" id="intentIntro" aria-expanded="false" aria-controls="intentMenus">
-            <span class="intent-intro-icon" aria-hidden="true">⌄</span>
-            <span class="intent-label-text">Strona</span>
-            <span class="intent-core-slot" aria-hidden="true">
-              <span class="ghost-core">hospicjum</span>
-            </span>
-          </button>
-
-          <button type="button" class="intent-row intent-trigger intent-row-support" data-intent="support" data-core-target aria-expanded="false" aria-controls="submenu-support" aria-label="Szukam wsparcia hospicjum">
-            <span class="intent-label-text">Szukam wsparcia</span>
-            <span class="intent-core-slot" aria-hidden="true">
-              <span class="ghost-core">hospicjum</span>
-            </span>
-          </button>
-
-          <button type="button" class="intent-row intent-trigger intent-row-supporter" data-intent="supporter" data-core-target aria-expanded="false" aria-controls="submenu-supporter" aria-label="Mogę wesprzeć hospicjum">
-            <span class="intent-label-text">Mogę wesprzeć</span>
-            <span class="intent-core-slot" aria-hidden="true">
-              <span class="ghost-core">hospicjum</span>
-            </span>
-          </button>
-
-          <button type="button" class="intent-row intent-trigger intent-row-learn" data-intent="learn" data-core-target aria-expanded="false" aria-controls="submenu-learn" aria-label="Chcę poznać hospicjum">
-            <span class="intent-label-text">Chcę poznać</span>
-            <span class="intent-core-slot" aria-hidden="true">
-              <span class="ghost-core">hospicjum</span>
-            </span>
-          </button>
-
-          <span class="shared-core" id="sharedCore" aria-hidden="true">hospicjum</span>
+        <div class="intent-overlay" aria-hidden="true">
+          <span class="shared-core" id="sharedCore">hospicjum</span>
         </div>
 
-        <div class="intent-menus" id="intentMenus">
-          <div class="intent-submenu" id="submenu-support" data-submenu="support">
-            <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Pacjent</a>
-            <a href="#jak-pomagac" data-page="jak-pomagac" class="navlink submenu-link">jako Członek Rodziny</a>
-          </div>
+        <div class="intent-rows" id="intentRows">
+          <section class="intent-group intent-group--support" data-intent="support">
+            <div class="intent-row-stack">
+              <button type="button" class="intent-row intent-row--intro" id="intentIntro" aria-expanded="false" aria-controls="intentRows" aria-label="Strona hospicjum">
+                <span class="intent-row-icon" aria-hidden="true">⌄</span>
+                <span class="intent-label-text">Strona</span>
+                <span class="intent-core-slot" data-core-slot aria-hidden="true"><span class="shared-core ghost-core">hospicjum</span></span>
+              </button>
 
-          <div class="intent-submenu" id="submenu-supporter" data-submenu="supporter">
-            <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Wolontariusz</a>
-            <a href="#wplaty" data-page="wplaty" class="navlink submenu-link">jako Darczyńca</a>
-            <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Specjalista</a>
-          </div>
+              <button type="button" class="intent-row intent-trigger intent-trigger--support" data-core-target aria-expanded="false" aria-controls="submenu-support" aria-label="Szukam wsparcia hospicjum">
+                <span class="intent-row-icon intent-row-icon--ghost" aria-hidden="true">⌄</span>
+                <span class="intent-label-text">Szukam wsparcia</span>
+                <span class="intent-core-slot" data-core-slot aria-hidden="true"><span class="shared-core ghost-core">hospicjum</span></span>
+              </button>
+            </div>
+            <div class="intent-submenu" id="submenu-support">
+              <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Pacjent</a>
+              <a href="#jak-pomagac" data-page="jak-pomagac" class="navlink submenu-link">jako Członek Rodziny</a>
+            </div>
+          </section>
 
-          <div class="intent-submenu" id="submenu-learn" data-submenu="learn">
-            <a href="#o-patronie" data-page="o-patronie" class="navlink submenu-link">nasz Patron</a>
-            <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">o nas</a>
-            <a href="#aktualnosci" data-page="aktualnosci" class="navlink submenu-link">aktualności</a>
-            <a href="#kontakt" data-page="kontakt" class="navlink submenu-link">kontakt</a>
-          </div>
+          <section class="intent-group" data-intent="supporter">
+            <button type="button" class="intent-row intent-trigger" data-core-target aria-expanded="false" aria-controls="submenu-supporter" aria-label="Mogę wesprzeć hospicjum">
+              <span class="intent-row-icon intent-row-icon--ghost" aria-hidden="true">⌄</span>
+              <span class="intent-label-text">Mogę wesprzeć</span>
+              <span class="intent-core-slot" data-core-slot aria-hidden="true"><span class="shared-core ghost-core">hospicjum</span></span>
+            </button>
+            <div class="intent-submenu" id="submenu-supporter">
+              <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Wolontariusz</a>
+              <a href="#wplaty" data-page="wplaty" class="navlink submenu-link">jako Darczyńca</a>
+              <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">jako Specjalista</a>
+            </div>
+          </section>
+
+          <section class="intent-group" data-intent="learn">
+            <button type="button" class="intent-row intent-trigger" data-core-target aria-expanded="false" aria-controls="submenu-learn" aria-label="Chcę poznać hospicjum">
+              <span class="intent-row-icon intent-row-icon--ghost" aria-hidden="true">⌄</span>
+              <span class="intent-label-text">Chcę poznać</span>
+              <span class="intent-core-slot" data-core-slot aria-hidden="true"><span class="shared-core ghost-core">hospicjum</span></span>
+            </button>
+            <div class="intent-submenu" id="submenu-learn">
+              <a href="#o-patronie" data-page="o-patronie" class="navlink submenu-link">nasz Patron</a>
+              <a href="#o-nas" data-page="o-nas" class="navlink submenu-link">o nas</a>
+              <a href="#aktualnosci" data-page="aktualnosci" class="navlink submenu-link">aktualności</a>
+              <a href="#kontakt" data-page="kontakt" class="navlink submenu-link">kontakt</a>
+            </div>
+          </section>
         </div>
       </div>
     </nav>
