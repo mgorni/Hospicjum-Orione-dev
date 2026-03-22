@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "o-patronie": "/partials/o-patronie.html",
     kontakt: "/partials/kontakt.html",
     wplaty: "/partials/wplaty.html",
+    "wolontariat-rejestracja": "/partials/wolontariat-rejestracja.html",
   };
 
   function updateActiveLinks(activePage) {
