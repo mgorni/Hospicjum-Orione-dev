@@ -140,6 +140,7 @@ body {
   pointer-events: none;
   color: var(--menu-blue);
   transition: transform 220ms ease, opacity 140ms ease;
+  transform-origin: top left;
   z-index: 4;
 }
 
@@ -162,7 +163,7 @@ body {
   display: grid;
   grid-template-columns: var(--row-icon-width) auto var(--menu-core-width);
   justify-content: end;
-  align-items: end;
+  align-items: start;
   column-gap: 0;
   margin: 0;
   padding: var(--row-block-pad) 0;
@@ -242,7 +243,7 @@ body {
   min-width: var(--menu-core-width);
   height: calc(var(--menu-type-size) * var(--menu-type-line));
   display: inline-flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: flex-start;
   justify-self: end;
   overflow: visible;
