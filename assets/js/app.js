@@ -4,6 +4,8 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const content = document.getElementById("content");
+  const yearNode = document.getElementById("year");
+  if (yearNode) yearNode.textContent = new Date().getFullYear();
 
   const routes = {
     home: "/partials/home.html",
@@ -22,10 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
       content.innerHTML = '<div class="loading">Ładowanie…</div>';
 
       const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
       const html = await response.text();
 
       content.innerHTML = html;
-
       window.location.hash = page;
       updateActiveLinks(page);
     } catch (e) {
@@ -36,91 +38,138 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateActiveLinks(activePage) {
     document.querySelectorAll(".navlink").forEach((link) => {
-      link.classList.toggle(
-        "active",
-        link.dataset.page === activePage
-      );
+      link.classList.toggle("active", link.dataset.page === activePage);
     });
 
-    document.querySelectorAll(".topnav-item-has-submenu").forEach((item) => {
-      const hasActiveChild = item.querySelector(`.submenu .navlink[data-page="${activePage}"]`);
-      item.classList.toggle("has-active-child", Boolean(hasActiveChild));
+    document.querySelectorAll("[data-group]").forEach((group) => {
+      const hasActiveChild = !!group.querySelector(`.submenu-link[data-page="${activePage}"]`);
+      group.classList.toggle("is-active", hasActiveChild);
     });
   }
 
-  // obsługa kliknięć w linki (1 i 2 poziom)
-  document.querySelectorAll(".navlink").forEach((a) => {
+  document.querySelectorAll(".navlink[data-page]").forEach((a) => {
     a.addEventListener("click", (ev) => {
       ev.preventDefault();
       const page = a.dataset.page;
       loadPage(page);
-
-      // zamykanie dropdownów
-      document.querySelectorAll(".topnav-item-has-submenu").forEach((item) => {
-        item.classList.remove("is-open");
-        const btn = item.querySelector(".navbutton");
-        if (btn) btn.setAttribute("aria-expanded", "false");
-      });
+      if (typeof window.closeAllMenus === "function") window.closeAllMenus();
     });
   });
 
-  // start
   const initialPage = window.location.hash.replace("#", "") || "home";
   loadPage(initialPage);
 });
 
-
 // ======================
-// Dropdown (mobile + accessibility)
+// Intent menu behavior
 // ======================
 
 document.addEventListener("DOMContentLoaded", () => {
-  const menuItems = document.querySelectorAll(".topnav-item-has-submenu");
+  const menuPanel = document.querySelector("[data-menu-panel]");
+  const mainMenu = document.querySelector("[data-main-menu]");
+  const groups = Array.from(document.querySelectorAll("[data-group]"));
+  const triggers = Array.from(document.querySelectorAll("[data-intent-trigger]"));
 
-  menuItems.forEach((item) => {
-    const button = item.querySelector(".navbutton");
+  if (!menuPanel || !mainMenu || !groups.length) return;
 
-    if (!button) return;
+  let openGroup = null;
 
-    button.addEventListener("click", (event) => {
+  function setCoreRow(rowIndex) {
+    menuPanel.style.setProperty("--core-row", String(rowIndex || 0));
+  }
+
+  function engageMenu(engaged) {
+    const isMobile = window.matchMedia("(max-width: 860px)").matches;
+    if (isMobile) {
+      menuPanel.classList.add("is-engaged");
+      return;
+    }
+
+    if (engaged) {
+      menuPanel.classList.add("is-engaged");
+    } else if (!openGroup) {
+      menuPanel.classList.remove("is-engaged");
+    }
+  }
+
+  function closeAllMenus() {
+    groups.forEach((group) => {
+      group.classList.remove("is-open");
+      const button = group.querySelector("[data-intent-trigger]");
+      if (button) button.setAttribute("aria-expanded", "false");
+    });
+    openGroup = null;
+  }
+
+  function openMenu(group) {
+    closeAllMenus();
+    group.classList.add("is-open");
+    const button = group.querySelector("[data-intent-trigger]");
+    if (button) button.setAttribute("aria-expanded", "true");
+    openGroup = group;
+    engageMenu(true);
+  }
+
+  groups.forEach((group, index) => {
+    const trigger = group.querySelector("[data-intent-trigger]");
+    if (!trigger) return;
+
+    const rowIndex = Number(group.dataset.coreRow || index || 0);
+
+    group.addEventListener("mouseenter", () => {
+      setCoreRow(rowIndex);
+      engageMenu(true);
+    });
+
+    group.addEventListener("focusin", () => {
+      setCoreRow(rowIndex);
+      engageMenu(true);
+    });
+
+    trigger.addEventListener("mouseenter", () => {
+      setCoreRow(rowIndex);
+      engageMenu(true);
+    });
+
+    trigger.addEventListener("click", (event) => {
       event.preventDefault();
+      const alreadyOpen = group.classList.contains("is-open");
+      setCoreRow(rowIndex);
+      engageMenu(true);
 
-      const isOpen = item.classList.contains("is-open");
-
-      // zamknij wszystkie
-      menuItems.forEach((otherItem) => {
-        otherItem.classList.remove("is-open");
-        const otherBtn = otherItem.querySelector(".navbutton");
-        if (otherBtn) otherBtn.setAttribute("aria-expanded", "false");
-      });
-
-      // otwórz kliknięty
-      if (!isOpen) {
-        item.classList.add("is-open");
-        button.setAttribute("aria-expanded", "true");
+      if (alreadyOpen) {
+        closeAllMenus();
+      } else {
+        openMenu(group);
       }
     });
   });
 
-  // klik poza menu zamyka
+  menuPanel.addEventListener("mouseenter", () => engageMenu(true));
+
+  menuPanel.addEventListener("mouseleave", () => {
+    if (openGroup) return;
+    setCoreRow(0);
+    engageMenu(false);
+  });
+
   document.addEventListener("click", (event) => {
-    if (!event.target.closest(".topnav-item-has-submenu")) {
-      menuItems.forEach((item) => {
-        item.classList.remove("is-open");
-        const btn = item.querySelector(".navbutton");
-        if (btn) btn.setAttribute("aria-expanded", "false");
-      });
+    if (!event.target.closest("[data-menu-panel]")) {
+      closeAllMenus();
+      setCoreRow(0);
+      engageMenu(false);
     }
   });
 
-  // ESC zamyka
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      menuItems.forEach((item) => {
-        item.classList.remove("is-open");
-        const btn = item.querySelector(".navbutton");
-        if (btn) btn.setAttribute("aria-expanded", "false");
-      });
+      closeAllMenus();
+      setCoreRow(0);
+      engageMenu(false);
     }
   });
+
+  window.closeAllMenus = closeAllMenus;
+  setCoreRow(0);
+  engageMenu(false);
 });
