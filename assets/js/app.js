@@ -197,10 +197,11 @@ document.addEventListener("DOMContentLoaded", () => {
     intro.setAttribute("aria-expanded", "true");
   }
 
-  function openPanel(target = supportTrigger || introSlot) {
-    ensurePanelOpen();
-    afterPanelSettle(() => moveSharedCoreTo(target));
-  }
+function openPanel(target = supportTrigger || introSlot) {
+  moveSharedCoreTo(target);
+  ensurePanelOpen();
+  afterPanelSettle(() => moveSharedCoreTo(target));
+}
 
   function closePanel() {
     if (isMobileMenu()) return;
@@ -212,21 +213,24 @@ document.addEventListener("DOMContentLoaded", () => {
     afterPanelSettle(() => moveSharedCoreTo(introSlot));
   }
 
-  function openIntent(trigger) {
-    const group = trigger.closest(".intent-group");
-    if (!group) return;
+function openIntent(trigger) {
+  const group = trigger.closest(".intent-group");
+  if (!group) return;
 
-    const alreadyOpen = group.classList.contains("is-open");
-    closeAllIntentMenus();
+  const alreadyOpen = group.classList.contains("is-open");
 
-    if (!alreadyOpen) {
-      group.classList.add("is-open");
-      trigger.classList.add("is-active");
-      trigger.setAttribute("aria-expanded", "true");
-    }
+  moveSharedCoreTo(trigger);
 
-    afterPanelSettle(() => moveSharedCoreTo(trigger));
+  closeAllIntentMenus();
+
+  if (!alreadyOpen) {
+    group.classList.add("is-open");
+    trigger.classList.add("is-active");
+    trigger.setAttribute("aria-expanded", "true");
   }
+
+  afterPanelSettle(() => moveSharedCoreTo(trigger));
+}
 
   function initDesktopState() {
     panel.classList.remove("is-open");
