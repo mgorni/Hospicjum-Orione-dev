@@ -3,17 +3,17 @@
   --page-bg: #fff;
   --menu-blue: #35529c;
   --menu-accent: #d8a03a;
-  --panel-line: rgba(53, 82, 156, .14);
-  --panel-bg-a: rgba(255, 255, 255, .84);
-  --panel-bg-b: rgba(244, 240, 222, .78);
-  --panel-shadow: 0 18px 38px rgba(0, 0, 0, .08);
-  --menu-type-size: clamp(1.12rem, .45vw + .96rem, 1.34rem);
+  --panel-line: rgba(53,82,156,.14);
+  --panel-bg-a: rgba(255,255,255,.86);
+  --panel-bg-b: rgba(242,236,214,.82);
+  --panel-shadow: 0 16px 36px rgba(0,0,0,.08);
+  --menu-type-size: clamp(1.15rem, 0.8vw + 0.82rem, 1.55rem);
   --menu-type-weight: 600;
-  --menu-type-line: 1.08;
-  --menu-core-width: 9.2ch;
-  --menu-row-h: 44px;
-  --menu-row-gap: 10px;
-  --menu-x-gap: 12px;
+  --menu-type-line: 1.12;
+  --menu-core-width: 9.4ch;
+  --row-icon-width: 2.2rem;
+  --panel-inline-pad: 28px;
+  --panel-block-pad: 18px;
 }
 
 * { box-sizing: border-box; }
@@ -47,8 +47,7 @@ body {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.40) 34%, rgba(237,230,198,.34) 72%, rgba(255,255,255,.08) 100%),
-    linear-gradient(225deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,0) 58%, rgba(216,160,58,.14) 100%);
+    linear-gradient(135deg, rgba(255,255,255,.44) 0%, rgba(255,255,255,.14) 34%, rgba(231,224,193,.28) 72%, rgba(255,255,255,.10) 100%);
 }
 
 .page-bg::after {
@@ -74,35 +73,50 @@ body {
 }
 
 .intent-panel {
-  width: min(760px, 100vw);
-  max-height: 88px;
-  padding: 16px 24px 14px 30px;
+  position: relative;
+  width: min(760px, calc(100vw - 8px));
+  max-height: 92px;
+  padding: var(--panel-block-pad) var(--panel-inline-pad);
   border-bottom-left-radius: 42px;
-  border-left: 1px solid rgba(255,255,255,.52);
-  border-bottom: 1px solid rgba(255,255,255,.52);
+  border-left: 1px solid rgba(255,255,255,.50);
+  border-bottom: 1px solid rgba(255,255,255,.50);
   background:
-    linear-gradient(135deg, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 42%, rgba(216,160,58,.14) 100%),
-    linear-gradient(135deg, var(--panel-bg-a) 0%, rgba(250,248,242,.82) 52%, var(--panel-bg-b) 100%);
+    linear-gradient(135deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 40%, rgba(216,160,58,.10) 100%),
+    linear-gradient(135deg, var(--panel-bg-a) 0%, rgba(249,247,239,.82) 48%, var(--panel-bg-b) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   overflow: hidden;
+  transition: max-height 260ms ease, box-shadow 240ms ease;
   box-shadow: 0 10px 24px rgba(0,0,0,.04);
-  transition: max-height 280ms ease, box-shadow 220ms ease;
 }
 
 .intent-panel.is-open {
-  max-height: 540px;
+  max-height: 520px;
   box-shadow: var(--panel-shadow);
 }
 
-.intent-head {
-  position: relative;
-  height: var(--menu-row-h);
-  transition: height 260ms ease;
+.intent-overlay {
+  position: absolute;
+  inset: var(--panel-block-pad) var(--panel-inline-pad);
+  pointer-events: none;
+  z-index: 4;
 }
 
-.intent-panel.is-open .intent-head {
-  height: calc(var(--menu-row-h) * 3 + var(--menu-row-gap) * 2);
+.intent-overlay .shared-core {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  transition: transform 220ms ease, opacity 140ms ease;
+}
+
+.intent-rows {
+  position: relative;
+  z-index: 2;
+}
+
+.intent-group + .intent-group {
+  border-top: 1px solid var(--panel-line);
 }
 
 .intent-row,
@@ -117,162 +131,148 @@ body {
 }
 
 .intent-row {
-  position: absolute;
-  right: 0;
   width: 100%;
   display: grid;
-  grid-template-columns: auto var(--menu-core-width);
+  grid-template-columns: var(--row-icon-width) auto var(--menu-core-width);
   justify-content: end;
   align-items: end;
-  column-gap: var(--menu-x-gap);
-  min-height: var(--menu-row-h);
+  column-gap: 0;
   margin: 0;
-  padding: 0;
+  padding: 18px 0 16px;
   border: 0;
   background: transparent;
   cursor: pointer;
   text-align: right;
-  transition: opacity 180ms ease, transform 220ms ease;
 }
 
-.intent-label-text,
-.intent-core-slot {
+.intent-row-stack {
+  position: relative;
+  min-height: calc(var(--menu-type-line) * 1em + 34px);
+}
+
+.intent-row-stack .intent-row {
+  position: absolute;
+  inset: 0;
+}
+
+.intent-row--intro {
+  z-index: 3;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 150ms ease;
+}
+
+.intent-trigger--support {
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.intent-panel.is-open .intent-row--intro {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.intent-panel.is-open .intent-trigger--support {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.intent-row-icon {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   justify-self: end;
+  border-radius: 999px;
+  border: 2px solid rgba(53,82,156,.55);
+  color: var(--menu-blue);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.intent-row-icon--ghost {
+  visibility: hidden;
+}
+
+.intent-label-text {
+  justify-self: end;
+  white-space: nowrap;
 }
 
 .intent-core-slot {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  justify-self: end;
   width: var(--menu-core-width);
   min-width: var(--menu-core-width);
-  height: calc(var(--menu-type-size) * var(--menu-type-line) + 4px);
-  display: inline-flex;
-  align-items: end;
-  justify-content: flex-start;
+  height: calc(var(--menu-type-line) * 1em + 2px);
   overflow: hidden;
 }
 
 .ghost-core {
   visibility: hidden;
+  pointer-events: none;
   user-select: none;
   white-space: nowrap;
 }
 
-.shared-core {
-  position: absolute;
-  top: 0;
-  left: 0;
-  white-space: nowrap;
-  pointer-events: none;
-  transition: transform 220ms ease, opacity 160ms ease;
-}
-
-.intent-row-intro {
-  top: 0;
-  grid-template-columns: auto auto var(--menu-core-width);
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.intent-panel.is-open .intent-row-intro {
-  opacity: 0;
-  transform: translateY(-4px);
-  pointer-events: none;
-}
-
-.intent-intro-icon {
-  width: 1.45em;
-  height: 1.45em;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid currentColor;
-  border-radius: 999px;
-  font-size: .9em;
-  line-height: 1;
-}
-
-.intent-row-support {
-  top: 0;
-  opacity: 0;
-  transform: translateY(-4px);
-  pointer-events: none;
-}
-
-.intent-row-supporter {
-  top: calc(var(--menu-row-h) + var(--menu-row-gap));
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-}
-
-.intent-row-learn {
-  top: calc(var(--menu-row-h) * 2 + var(--menu-row-gap) * 2);
-  opacity: 0;
-  transform: translateY(-8px);
-  pointer-events: none;
-}
-
-.intent-panel.is-open .intent-trigger {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+.intent-trigger {
+  transition: color 160ms ease;
 }
 
 .intent-trigger.is-active .intent-label-text {
   text-decoration: underline;
   text-decoration-color: var(--menu-accent);
   text-decoration-thickness: 3px;
-  text-underline-offset: 8px;
+  text-underline-offset: 9px;
 }
 
-.intent-menus {
-  position: relative;
-  margin-top: 10px;
-  padding-top: 6px;
-  border-top: 1px solid var(--panel-line);
+.intent-group:not(.intent-group--support) > .intent-row {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
   pointer-events: none;
-  transition: opacity 180ms ease, transform 220ms ease;
+  transition: opacity 160ms ease, transform 180ms ease;
 }
 
-.intent-panel.is-open .intent-menus {
+.intent-panel.is-open .intent-group:not(.intent-group--support) > .intent-row {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
 
 .intent-submenu {
-  display: none;
-  text-align: right;
-  padding: 4px 0 0;
+  overflow: hidden;
+  max-height: 0;
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translateY(-8px);
+  transition: max-height 280ms ease, opacity 220ms ease, transform 220ms ease;
+  padding-left: calc(var(--row-icon-width) + 6px);
+  margin-top: -2px;
 }
 
-.intent-submenu.is-open {
-  display: block;
-  animation: submenuFade .24s ease forwards;
-}
-
-@keyframes submenuFade {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+.intent-group.is-open .intent-submenu {
+  max-height: 260px;
+  opacity: 1;
+  transform: translateY(0);
+  padding-bottom: 12px;
 }
 
 .submenu-link {
   display: block;
-  width: 100%;
+  width: fit-content;
   color: var(--menu-blue);
   text-decoration: none;
-  font-size: 1rem;
-  line-height: 1.3;
-  padding: 6px 0;
-  text-align: right;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  padding: 8px 0;
 }
 
 .submenu-link:hover,
 .submenu-link:focus-visible,
-.navlink.active,
 .submenu-link.active {
   color: #213b7a;
   text-decoration: underline;
@@ -333,9 +333,7 @@ body {
 .qr-buttons button{ margin-right:8px; padding:6px 12px; cursor:pointer; }
 
 @media (max-width: 980px) {
-  .intent-panel {
-    width: min(700px, 100vw);
-  }
+  .intent-panel { width: min(700px, calc(100vw - 4px)); }
 }
 
 @media (max-width: 860px) {
@@ -347,59 +345,55 @@ body {
     pointer-events: auto;
   }
 
-  .intent-panel {
+  .intent-panel,
+  .intent-panel.is-open {
     width: 100%;
     max-height: none;
     border-radius: 0 0 0 28px;
-    padding: 16px 18px;
+    box-shadow: none;
+    padding: 14px 18px;
   }
 
-  .intent-head {
-    height: auto;
+  .intent-overlay,
+  .intent-core-slot {
+    display: none;
   }
 
   .intent-row,
-  .intent-row-intro,
-  .intent-row-support,
-  .intent-row-supporter,
-  .intent-row-learn {
+  .intent-row-stack .intent-row,
+  .intent-group:not(.intent-group--support) > .intent-row {
     position: static;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
     opacity: 1;
     transform: none;
     pointer-events: auto;
-    margin-bottom: 8px;
+    text-align: left;
+    padding: 14px 0 12px;
   }
 
-  .intent-row-intro {
+  .intent-row-stack {
+    min-height: 0;
+  }
+
+  .intent-panel:not(.is-open) .intent-trigger--support,
+  .intent-panel.is-open .intent-row--intro {
     display: none;
   }
 
-  .intent-row {
-    grid-template-columns: auto var(--menu-core-width);
-  }
-
-  .shared-core {
-    display: none;
-  }
-
-  .ghost-core {
-    visibility: visible;
-  }
-
-  .intent-menus {
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-    margin-top: 8px;
+  .intent-panel.is-open .intent-trigger--support {
+    display: flex;
   }
 
   .intent-submenu {
-    display: none;
+    padding-left: calc(var(--row-icon-width) + 10px);
+    margin-top: 0;
   }
 
-  .intent-submenu.is-open {
-    display: block;
+  .intent-group.is-open .intent-submenu {
+    max-height: 320px;
   }
 
   .content {
