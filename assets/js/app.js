@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
       content.innerHTML = html;
       window.location.hash = page;
       updateActiveLinks(page);
-      window.closeAllIntentMenus?.();
+      closeAllIntentMenus();
     } catch (e) {
       content.innerHTML = "<p>Błąd ładowania strony.</p>";
       console.error(e);
@@ -41,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".navlink").forEach((a) => {
     a.addEventListener("click", (ev) => {
       ev.preventDefault();
-      loadPage(a.dataset.page);
+      const page = a.dataset.page;
+      loadPage(page);
     });
   });
 
@@ -58,151 +59,146 @@ document.addEventListener("DOMContentLoaded", () => {
   const intro = document.getElementById("intentIntro");
   const sharedCore = document.getElementById("sharedCore");
   const triggers = Array.from(document.querySelectorAll(".intent-trigger"));
-  const submenus = Array.from(document.querySelectorAll(".intent-submenu"));
+  const supportTrigger = document.querySelector(".intent-trigger--support");
+  const introSlot = intro?.querySelector(".intent-core-slot");
 
-  function isMobile() {
-    return window.innerWidth <= 860;
+  function getSlot(target) {
+    if (!target) return null;
+    return target.classList.contains("intent-core-slot") ? target : target.querySelector(".intent-core-slot");
   }
 
-  function getSlot(element) {
-    return element?.querySelector(".intent-core-slot") || null;
-  }
-
-  function moveSharedCoreTo(element) {
-    if (isMobile() || !panel || !sharedCore || !element) return;
-    const slot = getSlot(element);
+  function moveSharedCoreTo(target) {
+    if (window.innerWidth <= 860 || !panel || !sharedCore) return;
+    const slot = getSlot(target);
     if (!slot) return;
 
     const slotRect = slot.getBoundingClientRect();
     const panelRect = panel.getBoundingClientRect();
-    const x = Math.round(slotRect.left - panelRect.left);
-    const y = Math.round(slotRect.top - panelRect.top);
+    const x = slotRect.left - panelRect.left;
+    const y = slotRect.top - panelRect.top;
 
-    sharedCore.style.transform = `translate(${x}px, ${y}px)`;
+    sharedCore.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
     sharedCore.style.opacity = "1";
   }
 
-  function setExpanded(button, state) {
-    if (button) button.setAttribute("aria-expanded", state ? "true" : "false");
-  }
-
   function closeAllIntentMenus() {
-    triggers.forEach((trigger) => {
-      trigger.classList.remove("is-active");
-      setExpanded(trigger, false);
+    document.querySelectorAll(".intent-group").forEach((group) => {
+      group.classList.remove("is-open");
+      const button = group.querySelector(".intent-trigger");
+      if (button) {
+        button.classList.remove("is-active");
+        button.setAttribute("aria-expanded", "false");
+      }
     });
-
-    submenus.forEach((submenu) => submenu.classList.remove("is-open"));
   }
-
   window.closeAllIntentMenus = closeAllIntentMenus;
 
-  function openSubmenu(intent) {
+  function openIntent(trigger) {
+    const group = trigger.closest(".intent-group");
+    if (!group) return;
+    const alreadyOpen = group.classList.contains("is-open");
+
     closeAllIntentMenus();
 
-    const trigger = document.querySelector(`.intent-trigger[data-intent="${intent}"]`);
-    const submenu = document.querySelector(`.intent-submenu[data-submenu="${intent}"]`);
-
-    if (trigger) {
+    if (!alreadyOpen) {
+      group.classList.add("is-open");
       trigger.classList.add("is-active");
-      setExpanded(trigger, true);
-      moveSharedCoreTo(trigger);
+      trigger.setAttribute("aria-expanded", "true");
     }
-
-    if (submenu) submenu.classList.add("is-open");
   }
 
   function openPanel() {
-    if (!panel || isMobile()) return;
+    if (!panel) return;
     panel.classList.add("is-open");
-    setExpanded(intro, true);
-    moveSharedCoreTo(document.querySelector(".intent-row-support"));
+    intro?.setAttribute("aria-expanded", "true");
+    moveSharedCoreTo(supportTrigger || introSlot);
   }
 
   function closePanel() {
-    if (!panel || isMobile()) return;
+    if (!panel || window.innerWidth <= 860) return;
     panel.classList.remove("is-open");
-    setExpanded(intro, false);
+    intro?.setAttribute("aria-expanded", "false");
     closeAllIntentMenus();
-    moveSharedCoreTo(intro);
+    moveSharedCoreTo(introSlot);
   }
 
-  if (panel && !isMobile()) {
-    moveSharedCoreTo(intro);
+  if (panel) {
+    moveSharedCoreTo(introSlot);
 
     panel.addEventListener("mouseenter", () => {
-      openPanel();
+      if (window.innerWidth > 860) openPanel();
     });
 
     panel.addEventListener("mouseleave", () => {
-      closePanel();
+      if (window.innerWidth > 860) closePanel();
     });
   }
 
   intro?.addEventListener("click", (event) => {
     event.preventDefault();
-    if (isMobile()) {
-      openSubmenu("support");
+    if (window.innerWidth <= 860) {
+      panel.classList.toggle("is-open");
+      intro.setAttribute("aria-expanded", panel.classList.contains("is-open") ? "true" : "false");
     } else {
       openPanel();
     }
   });
 
+  intro?.addEventListener("focus", () => moveSharedCoreTo(introSlot));
+
   triggers.forEach((trigger) => {
     trigger.addEventListener("mouseenter", () => {
-      if (!isMobile()) {
-        openPanel();
-        moveSharedCoreTo(trigger);
-        openSubmenu(trigger.dataset.intent);
-      }
+      if (!panel.classList.contains("is-open") && window.innerWidth > 860) openPanel();
+      moveSharedCoreTo(trigger);
     });
 
     trigger.addEventListener("focus", () => {
-      if (!isMobile()) {
-        openPanel();
-        moveSharedCoreTo(trigger);
-      }
+      if (window.innerWidth > 860) openPanel();
+      moveSharedCoreTo(trigger);
     });
 
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
-      if (!panel) return;
-      if (!isMobile()) panel.classList.add("is-open");
-      openSubmenu(trigger.dataset.intent);
+      if (!panel.classList.contains("is-open")) openPanel();
+      moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
   });
 
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".intent-menu")) {
-      if (isMobile()) {
-        closeAllIntentMenus();
-      } else {
-        closePanel();
+      closePanel();
+      if (window.innerWidth <= 860 && panel) {
+        panel.classList.remove("is-open");
+        intro?.setAttribute("aria-expanded", "false");
       }
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      if (isMobile()) {
-        closeAllIntentMenus();
-      } else {
-        closePanel();
+      closePanel();
+      if (window.innerWidth <= 860 && panel) {
+        panel.classList.remove("is-open");
+        intro?.setAttribute("aria-expanded", "false");
       }
     }
   });
 
   window.addEventListener("resize", () => {
     closeAllIntentMenus();
-    if (isMobile()) {
+    if (window.innerWidth <= 860) {
       panel?.classList.add("is-open");
+      intro?.setAttribute("aria-expanded", "true");
     } else {
       panel?.classList.remove("is-open");
-      moveSharedCoreTo(intro);
+      intro?.setAttribute("aria-expanded", "false");
+      moveSharedCoreTo(introSlot);
     }
   });
 
-  if (isMobile()) {
+  if (window.innerWidth <= 860) {
     panel?.classList.add("is-open");
+    intro?.setAttribute("aria-expanded", "true");
   }
 });
