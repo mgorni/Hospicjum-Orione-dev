@@ -68,19 +68,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return target.matches("[data-core-slot]") ? target : target.querySelector("[data-core-slot]");
   }
 
-  function moveSharedCoreTo(target) {
-    if (window.innerWidth <= 860 || !rows || !sharedCore) return;
-    const slot = getSlot(target);
-    if (!slot) return;
+let coreRaf = 0;
 
+function moveSharedCoreTo(target) {
+  if (window.innerWidth <= 860 || !overlay || !sharedCore) return;
+  const slot = getSlot(target);
+  if (!slot) return;
+
+  cancelAnimationFrame(coreRaf);
+
+  coreRaf = requestAnimationFrame(() => {
     const slotRect = slot.getBoundingClientRect();
-    const rowsRect = rows.getBoundingClientRect();
-    const x = slotRect.left - rowsRect.left;
-    const y = slotRect.top - rowsRect.top;
+    const overlayRect = overlay.getBoundingClientRect();
+
+    const x = slotRect.left - overlayRect.left;
+    const y = slotRect.top - overlayRect.top;
 
     sharedCore.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
     sharedCore.style.opacity = "1";
-  }
+  });
+}
 
   function closeAllIntentMenus() {
     document.querySelectorAll(".intent-group").forEach((group) => {
@@ -94,26 +101,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.closeAllIntentMenus = closeAllIntentMenus;
 
-  function openIntent(trigger) {
-    const group = trigger.closest(".intent-group");
-    if (!group) return;
-    const alreadyOpen = group.classList.contains("is-open");
+function openIntent(trigger) {
+  const group = trigger.closest(".intent-group");
+  if (!group) return;
+  const alreadyOpen = group.classList.contains("is-open");
 
-    closeAllIntentMenus();
+  closeAllIntentMenus();
 
-    if (!alreadyOpen) {
-      group.classList.add("is-open");
-      trigger.classList.add("is-active");
-      trigger.setAttribute("aria-expanded", "true");
-    }
+  if (!alreadyOpen) {
+    group.classList.add("is-open");
+    trigger.classList.add("is-active");
+    trigger.setAttribute("aria-expanded", "true");
+
+    requestAnimationFrame(() => {
+      moveSharedCoreTo(trigger);
+    });
+  } else {
+    requestAnimationFrame(() => {
+      moveSharedCoreTo(trigger);
+    });
   }
+}
 
-  function openPanel() {
-    if (!panel) return;
-    panel.classList.add("is-open");
-    intro?.setAttribute("aria-expanded", "true");
+function openPanel() {
+  if (!panel) return;
+  panel.classList.add("is-open");
+  intro?.setAttribute("aria-expanded", "true");
+
+  requestAnimationFrame(() => {
     moveSharedCoreTo(supportTrigger || introSlot);
-  }
+  });
+}
 
   function closePanel() {
     if (!panel || window.innerWidth <= 860) return;
@@ -163,7 +181,6 @@ document.addEventListener("DOMContentLoaded", () => {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
       if (!panel.classList.contains("is-open")) openPanel();
-      moveSharedCoreTo(trigger);
       openIntent(trigger);
     });
   });
