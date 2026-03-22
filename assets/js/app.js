@@ -150,21 +150,21 @@ document.addEventListener("DOMContentLoaded", () => {
   triggers.forEach((trigger) => {
     trigger.addEventListener("mouseenter", () => {
       if (!panel.classList.contains("is-open") && window.innerWidth > 860) openPanel();
-      openIntent(trigger);
       moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
 
     trigger.addEventListener("focus", () => {
       if (window.innerWidth > 860) openPanel();
-      openIntent(trigger);
       moveSharedCoreTo(trigger);
+      openIntent(trigger);      
     });
 
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
       if (!panel.classList.contains("is-open")) openPanel();
-      openIntent(trigger);
       moveSharedCoreTo(trigger);
+      openIntent(trigger);
     });
   });
 
