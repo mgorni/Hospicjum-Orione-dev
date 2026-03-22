@@ -198,8 +198,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 function openPanel(target = supportTrigger || introSlot) {
+
   moveSharedCoreTo(target);
+
   ensurePanelOpen();
+
   afterPanelSettle(() => moveSharedCoreTo(target));
 }
 
@@ -213,13 +216,18 @@ function openPanel(target = supportTrigger || introSlot) {
     afterPanelSettle(() => moveSharedCoreTo(introSlot));
   }
 
-function openIntent(trigger) {
+function openIntent(trigger, options = {}) {
+  const { immediate = false } = options;
+
   const group = trigger.closest(".intent-group");
   if (!group) return;
 
   const alreadyOpen = group.classList.contains("is-open");
 
-  moveSharedCoreTo(trigger);
+  // hover/focus: natychmiastowy ruch
+  if (immediate) {
+    moveSharedCoreTo(trigger);
+  }
 
   closeAllIntentMenus();
 
@@ -229,6 +237,7 @@ function openIntent(trigger) {
     trigger.setAttribute("aria-expanded", "true");
   }
 
+  // klik / zmiana layoutu: korekta po ustabilizowaniu panelu
   afterPanelSettle(() => moveSharedCoreTo(trigger));
 }
 
@@ -287,38 +296,43 @@ function openIntent(trigger) {
   });
 
   triggers.forEach((trigger) => {
-    trigger.addEventListener("mouseenter", () => {
-      if (isMobileMenu()) return;
+  trigger.addEventListener("mouseenter", () => {
+    if (isMobileMenu()) return;
 
-      if (!panel.classList.contains("is-open")) {
-        ensurePanelOpen();
-      }
+    if (!panel.classList.contains("is-open")) {
+      openPanel(trigger);
+      return;
+    }
 
-      openIntent(trigger);
-    });
-
-    trigger.addEventListener("focus", () => {
-      if (isMobileMenu()) return;
-
-      ensurePanelOpen();
-      openIntent(trigger);
-    });
-
-    trigger.addEventListener("click", (event) => {
-      event.preventDefault();
-
-      if (isMobileMenu()) {
-        openIntent(trigger);
-        return;
-      }
-
-      if (!panel.classList.contains("is-open")) {
-        ensurePanelOpen();
-      }
-
-      openIntent(trigger);
-    });
+    openIntent(trigger, { immediate: true });
   });
+
+  trigger.addEventListener("focus", () => {
+    if (isMobileMenu()) return;
+
+    if (!panel.classList.contains("is-open")) {
+      openPanel(trigger);
+      return;
+    }
+
+    openIntent(trigger, { immediate: true });
+  });
+
+  trigger.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    if (isMobileMenu()) {
+      openIntent(trigger);
+      return;
+    }
+
+    if (!panel.classList.contains("is-open")) {
+      ensurePanelOpen();
+    }
+
+    openIntent(trigger, { immediate: false });
+  });
+});
 
   document.addEventListener("click", (event) => {
     if (event.target.closest(".intent-menu")) return;
